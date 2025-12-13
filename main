@@ -1,0 +1,232 @@
+boolean mouseDown = false;
+
+// ===== SCREENS =====
+final int PRACTICE = 0;
+final int MAIN_MENU = 1;
+final int SETTINGS = 2;
+int screen = MAIN_MENU;
+
+// ===== CHORD DATA =====
+String[] chordNames = {"A", "C", "D", "E", "G"};
+int chordIndex = 0;
+
+// Each chord: {string, fret}
+// string: 0 = low E, 5 = high E
+int[][][] chordShapes = {
+  { {1,2}, {2,2}, {3,2} },                 // A
+  { {0,3}, {1,2}, {2,0}, {3,1}, {4,0} },   // C
+  { {1,2}, {2,3}, {3,2} },                 // D
+  { {0,0}, {1,2}, {2,2}, {3,1}, {4,0} },   // E
+  { {0,3}, {1,2}, {5,3} }                  // G
+};
+
+
+// ===== BUTTON SIZE =====
+int bw = 120;
+int bh = 40;
+
+// ===== SETUP =====
+void setup() {
+  size(800, 450);
+  textAlign(CENTER, CENTER);
+  textSize(14);
+}
+
+// ===== DRAW =====
+void draw() {
+  background(177);
+  
+
+  if (screen == PRACTICE) drawPractice();
+  else if (screen == MAIN_MENU) drawMainMenu();
+  else if (screen == SETTINGS) drawSettings();
+}
+
+// ===== PRACTICE SCREEN =====
+void drawPractice() {
+  drawLeftPanel();
+  drawChordLabel();
+  drawFretboard();
+  drawRightPanel();
+}
+
+// ===== LEFT PANEL =====
+void drawLeftPanel() {
+  fill(225);
+  rect(20, 50, 160, 330, 18);
+
+  drawButton(40, 70, "Main Menu");
+  drawButton(40, 120, "Chord List");
+  drawButton(40, 170, "Settings");
+  drawButton(40, 240, "Randomize");
+  drawButton(40, 300, "Play Chord");
+}
+
+// ===== CHORD LABEL =====
+void drawChordLabel() {
+  fill(200, 220, 240);
+  rect(240, 30, 180, 35, 10);
+  fill(0);
+  text("Chord: " + chordNames[chordIndex], 330, 48);
+}
+
+// ===== FRETBOARD =====
+void drawFretboard() {
+  // Wood background
+  fill(181, 140, 99);
+  rect(270, 80, 140, 280, 12);
+
+  // Nut
+  stroke(0);
+  strokeWeight(6);
+  line(270, 120, 410, 120);
+
+  // Frets
+  strokeWeight(1);
+  for (int i = 1; i <= 5; i++) {
+    line(270, 120 + i * 45, 410, 120 + i * 45);
+  }
+
+  // Strings (thick to thin)
+  for (int i = 0; i < 6; i++) {
+    strokeWeight(6 - i);
+    line(285 + i * 22, 90, 285 + i * 22, 350);
+  }
+
+  strokeWeight(1);
+  drawChordDots();
+}
+
+
+// ===== DRAW CHORD DOTS =====
+void drawChordDots() {
+  boolean[] hasFinger = new boolean[6];
+
+  // Finger dots
+  fill(0);
+  for (int i = 0; i < chordShapes[chordIndex].length; i++) {
+    int string = chordShapes[chordIndex][i][0];
+    int fret = chordShapes[chordIndex][i][1];
+
+    if (fret == 0) {
+      hasFinger[string] = true;
+      continue;
+    }
+
+    hasFinger[string] = true;
+
+    float x = 285 + string * 22;
+    float y = 120 + fret * 45 - 22;
+
+    ellipse(x, y, 14, 14);
+  }
+
+  // Open strings
+  noFill();
+  for (int i = 0; i < 6; i++) {
+    if (!hasFinger[i]) {
+      float x = 285 + i * 22;
+      ellipse(x, 105, 10, 10);
+    }
+  }
+}
+
+
+// ===== RIGHT PANEL =====
+void drawRightPanel() {
+  fill(235);
+  rect(460, 80, 120, 280, 18);
+}
+
+// ===== MAIN MENU =====
+void drawMainMenu() {
+  textSize(28);
+  fill(0);
+  text("Main Menu", width/2, 120);
+
+  textSize(14);
+  drawButton(width/2 - 60, 200, "Start");
+}
+
+// ===== SETTINGS =====
+void drawSettings() {
+  textSize(24);
+  fill(0);
+  text("Settings", width/2, 120);
+
+  textSize(14);
+  drawButton(width/2 - 60, 200, "Back");
+}
+
+// ===== BUTTON =====
+void drawButton(int x, int y, String label) {
+  boolean hover = mouseX > x && mouseX < x + bw &&
+                  mouseY > y && mouseY < y + bh;
+
+  boolean pressed = isButtonPressed(x, y);
+
+  if (pressed) {
+    // Pressed in
+    fill(150);
+    rect(x, y + 2, bw, bh, 10);
+  } 
+  else if (hover) {
+    // Hover
+    fill(170);
+    rect(x, y + 2, bw, bh, 10); // shadow
+    fill(200);
+    rect(x, y, bw, bh - 2, 10);
+  } 
+  else {
+    // Normal
+    fill(190);
+    rect(x, y + 2, bw, bh, 10); // shadow
+    fill(210);
+    rect(x, y, bw, bh - 2, 10);
+  }
+
+  fill(0);
+  text(label, x + bw/2, y + bh/2);
+}
+
+
+// ===== INPUT =====
+void mousePressed() {
+
+  mouseDown = true;
+  if (screen == PRACTICE) {
+    if (over(40, 70)) screen = MAIN_MENU;
+    else if (over(40, 170)) screen = SETTINGS;
+    else if (over(40, 240)) randomizeChord();
+    else if (over(40, 300)) println("Playing:", chordNames[chordIndex]);
+  }
+
+  else if (screen == MAIN_MENU) {
+    if (over(width/2 - 60, 200)) screen = PRACTICE;
+  }
+
+  else if (screen == SETTINGS) {
+    if (over(width/2 - 60, 200)) screen = PRACTICE;
+  }
+}
+void mouseReleased() {
+  mouseDown = false;
+}
+
+// ===== HELPERS =====
+boolean over(int x, int y) {
+  return mouseX > x && mouseX < x + bw &&
+         mouseY > y && mouseY < y + bh;
+}
+
+boolean isButtonPressed(int x, int y) {
+  return mouseDown &&
+         mouseX > x && mouseX < x + bw &&
+         mouseY > y && mouseY < y + bh;
+}
+
+
+
+void randomizeChord() {
+  chordIndex = int(random(chordNames.length));
+}
