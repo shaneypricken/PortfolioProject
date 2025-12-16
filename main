@@ -1,17 +1,13 @@
 boolean mouseDown = false;
 
-// ===== SCREENS =====
 final int PRACTICE = 0;
 final int MAIN_MENU = 1;
 final int SETTINGS = 2;
 int screen = MAIN_MENU;
 
-// ===== CHORD DATA =====
 String[] chordNames = {"A", "C", "D", "E", "G"};
 int chordIndex = 0;
 
-// Each chord: {string, fret}
-// string: 0 = low E, 5 = high E
 int[][][] chordShapes = {
   { {1,2}, {2,2}, {3,2} },                 // A
   { {0,3}, {1,2}, {2,0}, {3,1}, {4,0} },   // C
@@ -20,29 +16,23 @@ int[][][] chordShapes = {
   { {0,3}, {1,2}, {5,3} }                  // G
 };
 
-
-// ===== BUTTON SIZE =====
 int bw = 120;
 int bh = 40;
 
-// ===== SETUP =====
 void setup() {
   size(800, 450);
   textAlign(CENTER, CENTER);
   textSize(14);
 }
 
-// ===== DRAW =====
 void draw() {
   background(177);
   
-
   if (screen == PRACTICE) drawPractice();
   else if (screen == MAIN_MENU) drawMainMenu();
   else if (screen == SETTINGS) drawSettings();
 }
 
-// ===== PRACTICE SCREEN =====
 void drawPractice() {
   drawLeftPanel();
   drawChordLabel();
@@ -50,7 +40,6 @@ void drawPractice() {
   drawRightPanel();
 }
 
-// ===== LEFT PANEL =====
 void drawLeftPanel() {
   fill(225);
   rect(20, 50, 160, 330, 18);
@@ -62,7 +51,6 @@ void drawLeftPanel() {
   drawButton(40, 300, "Play Chord");
 }
 
-// ===== CHORD LABEL =====
 void drawChordLabel() {
   fill(200, 220, 240);
   rect(240, 30, 180, 35, 10);
@@ -70,24 +58,19 @@ void drawChordLabel() {
   text("Chord: " + chordNames[chordIndex], 330, 48);
 }
 
-// ===== FRETBOARD =====
 void drawFretboard() {
-  // Wood background
   fill(181, 140, 99);
   rect(270, 80, 140, 280, 12);
 
-  // Nut
   stroke(0);
   strokeWeight(6);
   line(270, 120, 410, 120);
 
-  // Frets
   strokeWeight(1);
   for (int i = 1; i <= 5; i++) {
     line(270, 120 + i * 45, 410, 120 + i * 45);
   }
 
-  // Strings (thick to thin)
   for (int i = 0; i < 6; i++) {
     strokeWeight(6 - i);
     line(285 + i * 22, 90, 285 + i * 22, 350);
@@ -96,13 +79,9 @@ void drawFretboard() {
   strokeWeight(1);
   drawChordDots();
 }
-
-
-// ===== DRAW CHORD DOTS =====
 void drawChordDots() {
   boolean[] hasFinger = new boolean[6];
 
-  // Finger dots
   fill(0);
   for (int i = 0; i < chordShapes[chordIndex].length; i++) {
     int string = chordShapes[chordIndex][i][0];
@@ -121,7 +100,6 @@ void drawChordDots() {
     ellipse(x, y, 14, 14);
   }
 
-  // Open strings
   noFill();
   for (int i = 0; i < 6; i++) {
     if (!hasFinger[i]) {
@@ -130,15 +108,11 @@ void drawChordDots() {
     }
   }
 }
-
-
-// ===== RIGHT PANEL =====
 void drawRightPanel() {
   fill(235);
   rect(460, 80, 120, 280, 18);
 }
 
-// ===== MAIN MENU =====
 void drawMainMenu() {
   textSize(28);
   fill(0);
@@ -148,7 +122,6 @@ void drawMainMenu() {
   drawButton(width/2 - 60, 200, "Start");
 }
 
-// ===== SETTINGS =====
 void drawSettings() {
   textSize(24);
   fill(0);
@@ -158,7 +131,6 @@ void drawSettings() {
   drawButton(width/2 - 60, 200, "Back");
 }
 
-// ===== BUTTON =====
 void drawButton(int x, int y, String label) {
   boolean hover = mouseX > x && mouseX < x + bw &&
                   mouseY > y && mouseY < y + bh;
@@ -188,9 +160,6 @@ void drawButton(int x, int y, String label) {
   fill(0);
   text(label, x + bw/2, y + bh/2);
 }
-
-
-// ===== INPUT =====
 void mousePressed() {
 
   mouseDown = true;
@@ -213,7 +182,6 @@ void mouseReleased() {
   mouseDown = false;
 }
 
-// ===== HELPERS =====
 boolean over(int x, int y) {
   return mouseX > x && mouseX < x + bw &&
          mouseY > y && mouseY < y + bh;
