@@ -60,6 +60,7 @@ void drawChordLabel() {
 
 void drawFretboard() {
   fill(181, 140, 99);
+  strokeWeight(5);
   rect(270, 80, 140, 280, 12);
 
   stroke(0);
