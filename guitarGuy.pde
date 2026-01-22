@@ -1,0 +1,289 @@
+// Tracks if the mouse is currently held down
+boolean mouseDown = false;
+
+// Screen identifiers
+final int PRACTICE   = 0;
+final int MAIN_MENU  = 1;
+final int SETTINGS   = 2;
+final int CHORD_LIST = 3;
+
+// Current active screen
+int screen = MAIN_MENU;
+
+
+// Names of all available chords
+String[] chordNames = {
+  "A", "C", "D", "E", "G",
+  "Am", "Dm", "Em", "F",
+  "E7", "A7", "D7", "G7",
+  "C7", "B7", "Fmaj7"
+};
+
+// Index of the currently selected chord
+int chordIndex = 0;
+
+// Chord finger positions: {string, fret}
+int[][][] chordShapes = {
+  { {2,2}, {3,2}, {4,2} },                      // A
+  { {1,3}, {2,2}, {4,1} },                      // C 
+  { {3,2}, {4,3}, {5,2} },                      // D
+  { {1,2}, {2,2}, {3,1} },                      // E 
+  { {0,3}, {1,2}, {5,3} },                      // G
+  { {2,2}, {3,2}, {4,1} },                      // Am
+  { {3,2}, {4,3}, {5,1} },                      // Dm
+  { {1,2}, {2,2} },                             // Em
+  { {0,1}, {1,3}, {2,3}, {3,2}, {4,1}, {5,1} }, // F
+  { {1,2}, {3,1} },                             // E7
+  { {2,2}, {4,2} },                             // A7
+  { {3,2}, {4,1}, {5,2} },                      // D7
+  { {0,3}, {1,2}, {5,1} },                      // G7
+  { {1,3}, {2,2}, {3,3}, {4,1} },               // C7
+  { {1,2}, {2,1}, {3,2}, {5,2} },               // B7
+  { {2,3}, {3,2}, {4,1} }                       // Fmaj7
+};
+
+// Button width and height
+int bw = 120;
+int bh = 40;
+
+
+// Runs once at program start
+void setup() {
+  size(800, 450);
+  textAlign(CENTER, CENTER);
+  textSize(14);
+}
+
+
+// Runs every frame
+void draw() {
+  background(177);
+
+  if (screen == PRACTICE)      drawPractice();
+  else if (screen == MAIN_MENU) drawMainMenu();
+  else if (screen == SETTINGS)  drawSettings();
+  else if (screen == CHORD_LIST) drawChordList();
+}
+
+// Draws the full practice screen layout
+void drawPractice() {
+  drawLeftPanel();
+  drawChordLabel();
+  drawFretboard();
+  drawRightPanel();
+}
+
+// Draws the left-side menu panel
+void drawLeftPanel() {
+  fill(225);
+  rect(20, 50, 160, 330, 18);
+
+  drawButton(40, 70,  "Main Menu");
+  drawButton(40, 120, "Chord List");
+  drawButton(40, 170, "Settings");
+  drawButton(40, 240, "Randomize");
+  drawButton(40, 300, "Play Chord");
+}
+
+// Displays the currently selected chord name
+void drawChordLabel() {
+  fill(200, 220, 240);
+  rect(240, 30, 180, 35, 10);
+  fill(0);
+  text("Chord: " + chordNames[chordIndex], 330, 48);
+}
+
+// Draws the guitar fretboard
+void drawFretboard() {
+  fill(181, 140, 99);
+  strokeWeight(5);
+  rect(270, 80, 140, 280, 12);
+
+  stroke(0);
+  strokeWeight(6);
+  line(270, 120, 410, 120); // Nut
+
+  strokeWeight(1);
+  for (int i = 1; i <= 5; i++) {
+    line(270, 120 + i * 45, 410, 120 + i * 45);
+  }
+
+  for (int i = 0; i < 6; i++) {
+    strokeWeight(6 - i);
+    line(285 + i * 22, 90, 285 + i * 22, 350);
+  }
+
+  strokeWeight(1);
+  drawChordDots();
+}
+
+// Draws finger dots and muted strings
+void drawChordDots() {
+  boolean[] hasFinger = new boolean[6];
+
+  fill(0);
+  for (int i = 0; i < chordShapes[chordIndex].length; i++) {
+    int string = chordShapes[chordIndex][i][0];
+    int fret  = chordShapes[chordIndex][i][1];
+
+    hasFinger[string] = true;
+
+    if (fret == 0) continue;
+
+    float x = 285 + string * 22;
+    float y = 120 + fret * 45 - 22;
+    ellipse(x, y, 14, 14);
+  }
+
+  fill(181, 140, 99);
+  strokeWeight(2);
+  for (int i = 0; i < 6; i++) {
+    if (!hasFinger[i]) {
+      float x = 285 + i * 22;
+      ellipse(x, 105, 14, 14);
+    }
+  }
+  strokeWeight(1);
+}
+
+// Draws the empty right panel (future use)
+void drawRightPanel() {
+  fill(235);
+  rect(460, 80, 120, 280, 18);
+}
+
+// Draws the main menu screen
+void drawMainMenu() {
+  textSize(28);
+  fill(0);
+  text("Main Menu", width/2, 120);
+
+  textSize(14);
+  drawButton(width/2 - 60, 200, "Start");
+}
+
+
+// Draws the settings screen
+void drawSettings() {
+  textSize(24);
+  fill(0);
+  text("Settings", width/2, 120);
+
+  textSize(14);
+  drawButton(width/2 - 60, 200, "Back");
+}
+
+
+// Displays a grid of selectable chords
+void drawChordList() {
+  textSize(24);
+  fill(0);
+  text("Chord List", width/2, 40);
+
+  textSize(14);
+
+  int x = 240;
+  int y = 80;
+  int cols = 4;
+
+  for (int i = 0; i < chordNames.length; i++) {
+    int cx = x + (i % cols) * (bw + 10);
+    int cy = y + (i / cols) * (bh + 10);
+    drawButton(cx, cy, chordNames[i]);
+  }
+
+  drawButton(40, 360, "Back");
+}
+
+// Draws a styled button with hover and press effects
+void drawButton(int x, int y, String label) {
+  boolean hover = mouseX > x && mouseX < x + bw &&
+                  mouseY > y && mouseY < y + bh;
+
+  boolean pressed = isButtonPressed(x, y);
+
+  if (pressed) {
+    fill(150);
+    rect(x, y + 2, bw, bh, 10);
+  } 
+  else if (hover) {
+    fill(170);
+    rect(x, y + 2, bw, bh, 10);
+    fill(200);
+    rect(x, y, bw, bh - 2, 10);
+  } 
+  else {
+    fill(190);
+    rect(x, y + 2, bw, bh, 10);
+    fill(210);
+    rect(x, y, bw, bh - 2, 10);
+  }
+
+  fill(0);
+  text(label, x + bw/2, y + bh/2);
+}
+
+
+// Handles mouse click logic
+void mousePressed() {
+  mouseDown = true;
+
+  if (screen == PRACTICE) {
+    if (over(40, 70))  screen = MAIN_MENU;
+    else if (over(40, 120)) screen = CHORD_LIST;
+    else if (over(40, 170)) screen = SETTINGS;
+    else if (over(40, 240)) randomizeChord();
+    else if (over(40, 300)) println("Playing:", chordNames[chordIndex]);
+  }
+  else if (screen == MAIN_MENU) {
+    if (over(width/2 - 60, 200)) screen = PRACTICE;
+  }
+  else if (screen == SETTINGS) {
+    if (over(width/2 - 60, 200)) screen = PRACTICE;
+  }
+  else if (screen == CHORD_LIST) {
+    if (over(40, 360)) {
+      screen = PRACTICE;
+      return;
+    }
+
+    int x = 240;
+    int y = 80;
+    int cols = 4;
+
+    for (int i = 0; i < chordNames.length; i++) {
+      int cx = x + (i % cols) * (bw + 10);
+      int cy = y + (i / cols) * (bh + 10);
+
+      if (over(cx, cy)) {
+        chordIndex = i;
+        screen = PRACTICE;
+        break;
+      }
+    }
+  }
+}
+
+// Resets mouse state on release
+void mouseReleased() {
+  mouseDown = false;
+}
+
+
+// Checks if mouse is over a button
+boolean over(int x, int y) {
+  return mouseX > x && mouseX < x + bw &&
+         mouseY > y && mouseY < y + bh;
+}
+
+// Checks if a button is currently being pressed
+boolean isButtonPressed(int x, int y) {
+  return mouseDown &&
+         mouseX > x && mouseX < x + bw &&
+         mouseY > y && mouseY < y + bh;
+}
+
+// Randomly selects a chord
+void randomizeChord() {
+  chordIndex = int(random(chordNames.length));
+}
